@@ -5,6 +5,50 @@
 Hello! This test is designed to specifically test your Python, React and web development skills. The task is unconventional and has a slightly contrived setup on purpose and requires you to learn basic concepts of Docker on the fly. 
 
 
+# Solution
+
+Errors faced during building docker images- 
+
+1-	#0 1.953 The following packages have unmet dependencies:
+	#0 2.081  mongodb-org-mongos : Depends: libssl1.1 (>= 1.1.0) but it is not installable       
+	#0 2.081  mongodb-org-server : Depends: libssl1.1 (>= 1.1.0) but it is not installable       
+	#0 2.081  mongodb-org-shell : Depends: libssl1.1 (>= 1.1.0) but it is not installable    
+	
+	Solution- Made changes in the docker file to install libssl1.1 from source url rather as it wasn't availbe on pip
+	wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+	sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+
+2-	 > [adb_test-api 15/17] RUN easy_install pip:
+	#0 0.486 /bin/sh: line 1: easy_install: command not found
+	
+	Solution-This was due to new pip not having easy-install as it was outdated and already integrated in the updated pip so I removed that from docker file
+	
+
+3-	There was an error regarding coroutines while starting the react server, it had to do with a SSL package and how node18 didn't support it properly to fix that we set node_options environment variable to --openssl-legacy-provider
+
+
+
+Explanation of the Docker File-
+
+The docker file sets up the host os or the host machine for other sub images or other images to work, in it we are using the 
+python-3.8 image which is based off ubuntu/Debian, first we install all the required packages with apt-get install, then we install all dependencies for mongo, in which I faced some errors listed above, after that it installs yarn for the react server and after that it installs the python dependencies, in which there were some unmet dependencies and had an issue with easy-install as it was outdated so fixed them.
+
+Explanation of Docker Compose file-
+
+The docker compose file consists of the initial commands which need to be run in those instances along with the volumes that they are gonna use, they can use the same or different volumes, in this we have 3 instances, app,api and mongo, app one is for the react server, api is for the Django server and the mongo is for the mongo server, we specify on which ports we want the services up and running and what commands to run to make sure those services run well.
+
+How I approached the full stack implementation-
+
+Backend-
+
+I went with the repository pattern for the backend making kind of a repository layer for mongo client so it can have insert  one, find and delete all methods for collection names so that it's easily isolated and decoupled and doesn't require too much of re-using code, I also created a service in views.py for ToDos which basically handles insertion, deletion and fetching of all ToDos data.
+
+Frontend-
+
+For frontend I simply used proper validations and state rendering in a way that it doesn't cause re-renders and only renders when necessary, I tried implementing tailwind styling, worked fine with npm run start but with docker I was facing some issues even after configuring package.json file correctly, apart from the styling the functionality works correctly although if given enough time I would have found a way to debug that too, I hope it's considerable.
+
+
+
 # Structure
 
 This repository includes code for a Docker setup with 3 containers:
@@ -66,3 +110,4 @@ When you run `localhost:3000`, you would see 2 things:
    * https://kinsta.com/blog/python-object-oriented-programming/
    * https://realpython.com/solid-principles-python/
    * https://www.toptal.com/python/python-design-patterns
+
